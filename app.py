@@ -43,8 +43,10 @@ st.divider()
 st.subheader("Owner")
 owner_name = st.text_input("Owner name", value="Jordan")
 
-if "pets" not in st.session_state:
-    st.session_state.pets = []
+if "owner" not in st.session_state:
+    st.session_state.owner = Owner(owner_name)
+owner = st.session_state.owner
+owner.name = owner_name
 
 st.subheader("Pets")
 col_pet_name, col_species = st.columns(2)
@@ -54,14 +56,14 @@ with col_species:
     species = st.selectbox("Species", ["dog", "cat", "other"])
 
 if st.button("Add pet"):
-    st.session_state.pets.append(Pet(pet_name, species))
+    owner.add_pet(Pet(pet_name, species))
 
-if st.session_state.pets:
+if owner.pets:
     st.write("Current pets:")
     st.table(
         [
             {"Pet": p.name, "Species": p.species, "Tasks": len(p.tasks)}
-            for p in st.session_state.pets
+            for p in owner.pets
         ]
     )
 else:
@@ -71,12 +73,12 @@ st.divider()
 
 st.markdown("### Tasks")
 
-if not st.session_state.pets:
+if not owner.pets:
     st.info("Add a pet first.")
 else:
     col1, col2, col3, col4 = st.columns(4)
     with col1:
-        selected_pet_name = st.selectbox("Pet", [p.name for p in st.session_state.pets])
+        selected_pet_name = st.selectbox("Pet", [p.name for p in owner.pets])
     with col2:
         task_title = st.text_input("Task title", value="Morning walk")
     with col3:
@@ -85,14 +87,14 @@ else:
         priority = st.selectbox("Priority", ["low", "medium", "high"], index=2)
 
     if st.button("Add task"):
-        for pet in st.session_state.pets:
+        for pet in owner.pets:
             if pet.name == selected_pet_name:
                 pet.add_task(
                     Task(title=task_title, duration_minutes=int(duration), priority=priority)
                 )
                 break
 
-    for pet in st.session_state.pets:
+    for pet in owner.pets:
         st.write(f"Tasks for {pet.name}:")
         if pet.tasks:
             st.table(
@@ -121,16 +123,10 @@ with col_start:
     start_hour = st.number_input("Start hour (0-23)", min_value=0, max_value=23, value=8)
 
 if st.button("Generate schedule"):
-    if not st.session_state.pets or not any(pet.tasks for pet in st.session_state.pets):
+    if not owner.pets or not any(pet.tasks for pet in owner.pets):
         st.info("Add at least one pet with a task before generating a schedule.")
     else:
-        owner = Owner(owner_name)
-        for pet in st.session_state.pets:
-            owner.add_pet(pet)
-
-        task_owner = {
-            id(t): pet.name for pet in st.session_state.pets for t in pet.tasks
-        }
+        task_owner = {id(t): pet.name for pet in owner.pets for t in pet.tasks}
 
         result = Scheduler().build_schedule_for_owner(
             owner, available_minutes=int(available_minutes), start_minute=int(start_hour) * 60
