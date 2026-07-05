@@ -39,13 +39,16 @@ The scheduler considers two constraints: **priority** (`"low"`/`"medium"`/`"high
 **a. How you used AI**
 
 - How did you use AI tools during this project (for example: design brainstorming, debugging, refactoring)?
+Ive used for design and debugging mostly.
 - What kinds of prompts or questions were most helpful?
-I think testing th
+Honestly, the most helpful part was using the chatbot to troubleshoot live issues. For example, after making some changes, the website started throwing errors. I asked for help, and it gently reminded me to do a simple page refresh—which completely solved it. It was a silly mistake on my end, but exactly the kind of quick sanity check I needed. 
 
 **b. Judgment and verification**
 
 - Describe one moment where you did not accept an AI suggestion as-is.
+It tried to commit when we weren't supposed to and I told it to wait till we are done. 
 - How did you evaluate or verify what the AI suggested?
+I checked the website after every change to see if it works correctly as well as read them.
 
 ---
 
