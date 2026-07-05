@@ -40,6 +40,7 @@ The scheduler considers two constraints: **priority** (`"low"`/`"medium"`/`"high
 
 - How did you use AI tools during this project (for example: design brainstorming, debugging, refactoring)?
 - What kinds of prompts or questions were most helpful?
+I think testing th
 
 **b. Judgment and verification**
 

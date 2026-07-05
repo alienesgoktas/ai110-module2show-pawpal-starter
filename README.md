@@ -68,11 +68,25 @@ pytest
 pytest --cov
 ```
 
+The suite covers: priority-based schedule building under a time budget (`tests/test_scheduler.py`), and — in `tests/test_pawpal.py` — task completion, chronological sorting (with untimed tasks last), filtering by status/pet, recurring daily/weekly tasks advancing correctly via `timedelta`, and conflict detection (same pet, across pets, and correctly ignoring already-completed tasks). It also covers empty-state edge cases: a pet with no tasks and an owner with no pets.
+
 Sample test output:
 
 ```
-# Paste your pytest output here
+$ pytest
+============================= test session starts =============================
+platform win32 -- Python 3.14.5, pytest-9.1.1, pluggy-1.6.0
+rootdir: C:\Users\Enes\ai110-module2show-pawpal-starter
+plugins: anyio-4.13.0
+collected 19 items
+
+tests\test_pawpal.py ..............                                      [ 73%]
+tests\test_scheduler.py .....                                            [100%]
+
+============================= 19 passed in 0.03s ==============================
 ```
+
+**Confidence Level:** ★★★★☆ (4/5) — all core scheduling, sorting, filtering, recurrence, and conflict-detection behaviors are covered by passing tests, including several edge cases (empty pets/owners, same-pet conflicts, completed-task exclusion). Not a 5: conflict detection only checks exact time matches, not overlapping durations (see `reflection.md` section 2b), so that gap isn't and can't be tested yet.
 
 ## 📐 Smarter Scheduling
 
