@@ -4,13 +4,21 @@
 
 **a. Initial design**
 
-- Briefly describe your initial UML design.
-- What classes did you include, and what responsibilities did you assign to each?
+The app needs to support three core user actions:
+1. **Add a pet-care task** — the owner records something that needs to happen (e.g., a walk, a feeding, a med), along with how long it takes and how important it is.
+2. **Generate a daily schedule** — given a list of tasks and a limited amount of time available today, the system decides which tasks fit, in what order, and at what time each one starts.
+3. **See today's plan and why** — the owner sees the resulting schedule along with a short explanation of why each task was included, and which tasks (if any) didn't fit and why.
+
+To support this, the design has four classes, all living in `pawpal_system.py`:
+
+- **Task** — holds the data for one care task: `title` (what it is), `duration_minutes` (how long it takes), and `priority` (`"low"`/`"medium"`/`"high"`, how important it is). It has no behavior of its own — it's a plain data holder (`@dataclass`).
+- **Pet** — holds identity info for the animal being cared for: `name` and `species`.
+- **Owner** — holds identity info for the person doing the planning: `name`.
+- **Scheduler** — the only class with real behavior. Its `build_schedule(tasks, available_minutes, start_minute)` method takes the raw list of tasks plus the time budget and turns it into a `ScheduleResult`: an ordered list of `ScheduledTask` (each with a computed start/end time and a reason it was chosen) and a list of skipped tasks (each with a reason it didn't fit). It decides *what* happens and *when*, while `Task`/`Pet`/`Owner` just describe *who*/*what*.
 
 **b. Design changes**
 
-- Did your design change during implementation?
-- If yes, describe at least one change and why you made it.
+The scheduling logic was originally split across two files — a `models.py` for the plain data classes (`Task`, `Pet`, `Owner`) and a `scheduler.py` for the behavior (`Scheduler`, `ScheduledTask`, `ScheduleResult`). It was consolidated into a single `pawpal_system.py` logic-layer file to match the project's expected structure. This was a pure reorganization — no class attributes, methods, or scheduling behavior changed.
 
 ---
 
