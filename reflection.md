@@ -26,13 +26,11 @@ The scheduling logic was originally split across two files — a `models.py` for
 
 **a. Constraints and priorities**
 
-- What constraints does your scheduler consider (for example: time, priority, preferences)?
-- How did you decide which constraints mattered most?
+The scheduler considers two constraints: **priority** (`"low"`/`"medium"`/`"high"`) and **available time** (a daily minute budget). `Scheduler.build_schedule()` sorts by priority first, then by duration as a tie-break, then greedily fits tasks into the remaining budget — so high-priority tasks are never bumped by lower-priority ones, but among equal-priority tasks, shorter ones are preferred since they let more tasks fit into a limited day. Priority mattered most because the scenario is about a busy owner who needs the *important* things (meds, feeding) guaranteed before nice-to-haves (playtime) when time runs short.
 
 **b. Tradeoffs**
 
-- Describe one tradeoff your scheduler makes.
-- Why is that tradeoff reasonable for this scenario?
+`Scheduler.detect_conflicts()` only checks for exact `time` string matches (e.g., two tasks both at `"08:00"`) rather than checking whether tasks' full duration windows overlap (e.g., an 08:00–08:30 task and an 08:15 task). This is a deliberately lightweight strategy: it's a simple dictionary lookup grouped by the `time` string, with no interval-overlap math, so it's fast and easy to reason about. The tradeoff is that it will miss "soft" conflicts where two tasks start at different times but their durations overlap — that's reasonable for this scenario because the owner is mainly trying to catch obvious double-bookings ("I put two things at 8am"), not build a minute-precise calendar; a stricter overlap check could always be added later without changing the rest of the design.
 
 ---
 

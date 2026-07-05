@@ -1,6 +1,8 @@
 from dataclasses import dataclass, field
+from datetime import date, timedelta
 
 PRIORITY_ORDER = {"high": 0, "medium": 1, "low": 2}
+RECURRENCE_INTERVALS = {"daily": timedelta(days=1), "weekly": timedelta(weeks=1)}
 
 
 @dataclass
@@ -11,10 +13,26 @@ class Task:
     time: str | None = None
     frequency: str = "once"
     completed: bool = False
+    due_date: date | None = None
 
     def mark_complete(self) -> None:
         """Mark this task as done."""
         self.completed = True
+
+    def next_occurrence(self) -> "Task | None":
+        """Return the next occurrence of this task if it recurs, else None."""
+        interval = RECURRENCE_INTERVALS.get(self.frequency)
+        if interval is None:
+            return None
+        return Task(
+            title=self.title,
+            duration_minutes=self.duration_minutes,
+            priority=self.priority,
+            time=self.time,
+            frequency=self.frequency,
+            completed=False,
+            due_date=(self.due_date or date.today()) + interval,
+        )
 
 
 @dataclass
@@ -31,6 +49,14 @@ class Pet:
         """Return all tasks belonging to this pet."""
         return self.tasks
 
+    def mark_task_complete(self, task: Task) -> Task | None:
+        """Complete a task and, if it recurs, append and return its next occurrence."""
+        task.mark_complete()
+        next_task = task.next_occurrence()
+        if next_task is not None:
+            self.tasks.append(next_task)
+        return next_task
+
 
 @dataclass
 class Owner:
@@ -44,6 +70,13 @@ class Owner:
     def all_tasks(self) -> list[Task]:
         """Flatten and return every task across all of this owner's pets."""
         return [task for pet in self.pets for task in pet.tasks]
+
+    def tasks_for_pet(self, pet_name: str) -> list[Task]:
+        """Return the tasks belonging to the pet with the given name, or an empty list."""
+        for pet in self.pets:
+            if pet.name == pet_name:
+                return pet.tasks
+        return []
 
 
 @dataclass
@@ -101,6 +134,29 @@ class Scheduler:
     ) -> ScheduleResult:
         """Collect every task across an owner's pets, then build a schedule from them."""
         return self.build_schedule(owner.all_tasks(), available_minutes, start_minute)
+
+    def sort_by_time(self, tasks: list[Task]) -> list[Task]:
+        """Sort tasks by their HH:MM time string, placing untimed tasks last."""
+        return sorted(tasks, key=lambda t: t.time or "24:00")
+
+    def filter_by_status(self, tasks: list[Task], completed: bool) -> list[Task]:
+        """Return only the tasks matching the given completion status."""
+        return [t for t in tasks if t.completed == completed]
+
+    def detect_conflicts(self, owner: Owner) -> list[str]:
+        """Return a warning for each clock time shared by two or more of an owner's pending tasks."""
+        labels_by_time: dict[str, list[str]] = {}
+        for pet in owner.pets:
+            for task in pet.tasks:
+                if task.time is None or task.completed:
+                    continue
+                labels_by_time.setdefault(task.time, []).append(f"{pet.name}'s {task.title}")
+
+        return [
+            f"Conflict at {time}: {' and '.join(labels)} are scheduled at the same time."
+            for time, labels in labels_by_time.items()
+            if len(labels) > 1
+        ]
 
 
 def format_time(minute: int) -> str:
